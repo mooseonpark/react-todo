@@ -11,6 +11,7 @@ import {
 	addDoc,
 	setDoc,
 	doc,
+	deleteDoc,
 } from 'firebase/firestore';
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -103,7 +104,7 @@ function App() {
 		const docRef = await addDoc(collection(db, 'todoItem'), {
 			todoItemContent: newTodoItem,
 			isFinished: false,
-		});
+		}); // firestore db에 todoItem라는 콜렉션에 위 두개 json을 추가해라 라는뜻
 		setTodoItemList([
 			...todoItemList,
 			{ id: docRef.id, todoItemContent: newTodoItem, isFinished: false },
@@ -131,7 +132,9 @@ function App() {
 		);
 	};
 
-	const onRemoveClick = (removedTodoItem) => {
+	const onRemoveClick = async (removedTodoItem) => {
+		const todoItemRef = doc(db, 'todoItem', removedTodoItem.id);
+		await deleteDoc(todoItemRef);
 		setTodoItemList(
 			todoItemList.filter((todoItem) => {
 				return todoItem.id !== removedTodoItem.id;
