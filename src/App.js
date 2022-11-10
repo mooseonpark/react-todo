@@ -43,7 +43,7 @@ const TodoItem = (props) => {
 				variant="outlined"
 				onClick={() => props.onRemoveClick(props.todoItem)}
 			>
-				Remove
+				X
 			</Button>
 		</li>
 	);
