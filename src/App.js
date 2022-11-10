@@ -5,7 +5,13 @@ import Button from '@mui/material/Button';
 /// Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import {
+	getFirestore,
+	collection,
+	addDoc,
+	setDoc,
+	doc,
+} from 'firebase/firestore';
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -103,7 +109,13 @@ function App() {
 			{ id: docRef.id, todoItemContent: newTodoItem, isFinished: false },
 		]);
 	};
-	const onTodoItemClick = (clickedTodoItem) => {
+	const onTodoItemClick = async (clickedTodoItem) => {
+		const todoItemRef = doc(db, 'todoItem', clickedTodoItem.id);
+		await setDoc(
+			todoItemRef,
+			{ isFinished: !clickedTodoItem.isFinished },
+			{ merge: true }
+		);
 		setTodoItemList(
 			todoItemList.map((todoItem) => {
 				if (clickedTodoItem.id === todoItem.id) {
