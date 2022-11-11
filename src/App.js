@@ -20,6 +20,13 @@ import {
 	query,
 	orderBy,
 } from 'firebase/firestore';
+import {
+	GoogleAuthProvider,
+	getAuth,
+	signInWithRedirect,
+	onAuthStateChanged,
+	signOut,
+} from 'firebase/auth';
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -39,8 +46,10 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-
 const db = getFirestore(app);
+
+const provider = new GoogleAuthProvider();
+const auth = getAuth(app);
 
 const TodoItemInputField = (props) => {
 	const [input, setInput] = useState('');
@@ -106,20 +115,51 @@ const TodoItemList = (props) => {
 };
 
 const TodoListAppBar = (props) => {
+	const loginWithGoogleButton = (
+		<Button
+			color="inherit"
+			onclick={() => {
+				signInWithRedirect(auth, provider);
+			}}
+		>
+			Login with Google
+		</Button>
+	);
+	const logoutButton = (
+		<Button
+			color="inherit"
+			onClick={() => {
+				signOut(auth);
+			}}
+		>
+			Log out
+		</Button>
+	);
+	const button =
+		props.currentUser === null ? loginWithGoogleButton : logoutButton;
 	return (
 		<AppBar position="static">
 			<Toolbar>
 				<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
 					Todo List App
 				</Typography>
-				<Button color="inherit">Login</Button>
+				{button}
 			</Toolbar>
 		</AppBar>
 	);
 };
 
 function App() {
+	const [currentUser, setCurrentUser] = useState(null);
 	const [todoItemList, setTodoItemList] = useState([]);
+
+	onAuthStateChanged(auth, (user) => {
+		if (user) {
+			setCurrentUser(user.uid);
+		} else {
+			setCurrentUser(null);
+		}
+	});
 	const syncTodoItemListStateWithFirestore = () => {
 		// 이 함수 call 될 때마다 firestore에서 모든 정보 읽어오고 todoItemList initialize 시키는것
 		// app 처음 켜지면 db의 todoItem 다 읽어와라
@@ -168,7 +208,7 @@ function App() {
 	};
 	return (
 		<div className="App">
-			<TodoListAppBar />
+			<TodoListAppBar currentUser={currentUser} />
 			<TodoItemInputField onSubmit={onSubmit} />
 			<TodoItemList
 				todoItemList={todoItemList}
