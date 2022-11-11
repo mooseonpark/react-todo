@@ -172,6 +172,7 @@ function App() {
 					todoItemContent: doc.data().todoItemContent,
 					isFinished: doc.data().isFinished,
 					createdTime: doc.data().createdTime ?? 0,
+					userId: doc.data().userId,
 				});
 			});
 			setTodoItemList(firestoreTodoItemList);
@@ -186,6 +187,7 @@ function App() {
 			todoItemContent: newTodoItem,
 			isFinished: false,
 			createdTime: Math.floor(Date.now() / 1000),
+			userId: currentUser,
 		});
 		// firestore db에 todoItem라는 콜렉션에 위 두개 json을 추가해라 라는뜻
 		syncTodoItemListStateWithFirestore();
