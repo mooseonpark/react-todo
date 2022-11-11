@@ -19,7 +19,9 @@ import {
 	getDocs,
 	query,
 	orderBy,
+	where,
 } from 'firebase/firestore';
+
 import {
 	GoogleAuthProvider,
 	getAuth,
@@ -118,7 +120,7 @@ const TodoListAppBar = (props) => {
 	const loginWithGoogleButton = (
 		<Button
 			color="inherit"
-			onclick={() => {
+			onClick={() => {
 				signInWithRedirect(auth, provider);
 			}}
 		>
@@ -137,6 +139,7 @@ const TodoListAppBar = (props) => {
 	);
 	const button =
 		props.currentUser === null ? loginWithGoogleButton : logoutButton;
+
 	return (
 		<AppBar position="static">
 			<Toolbar>
@@ -160,10 +163,17 @@ function App() {
 			setCurrentUser(null);
 		}
 	});
+
 	const syncTodoItemListStateWithFirestore = () => {
 		// 이 함수 call 될 때마다 firestore에서 모든 정보 읽어오고 todoItemList initialize 시키는것
 		// app 처음 켜지면 db의 todoItem 다 읽어와라
-		const q = query(collection(db, 'todoItem'), orderBy('createdTime', 'desc')); // createdTime기준으로 sorting해서 가져와라
+		const q = query(
+			collection(db, 'todoItem'),
+			where('userId', '==', currentUser),
+			orderBy('createdTime', 'desc')
+		);
+
+		// createdTime기준으로 sorting해서 가져와라
 		getDocs(q).then((querySnapshot) => {
 			const firestoreTodoItemList = [];
 			querySnapshot.forEach((doc) => {
@@ -180,7 +190,7 @@ function App() {
 	};
 	useEffect(() => {
 		syncTodoItemListStateWithFirestore();
-	}, []);
+	}, [currentUser]); // userId 바뀔때마다 새로 읽어와야함
 
 	const onSubmit = async (newTodoItem) => {
 		await addDoc(collection(db, 'todoItem'), {
