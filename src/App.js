@@ -103,6 +103,7 @@ const TodoItemList = (props) => {
 function App() {
 	const [todoItemList, setTodoItemList] = useState([]);
 	const syncTodoItemListStateWithFirestore = () => {
+		// 이 함수 call 될 때마다 firestore에서 모든 정보 읽어오고 todoItemList initialize 시키는것
 		// app 처음 켜지면 db의 todoItem 다 읽어와라
 		getDocs(collection(db, 'todoItem')).then((querySnapshot) => {
 			const firestoreTodoItemList = [];
@@ -111,6 +112,7 @@ function App() {
 					id: doc.id,
 					todoItemContent: doc.data().todoItemContent,
 					isFinished: doc.data().isFinished,
+					createdTime: doc.data().createdTime ?? 0,
 				});
 			});
 			setTodoItemList(firestoreTodoItemList);
@@ -124,6 +126,7 @@ function App() {
 		await addDoc(collection(db, 'todoItem'), {
 			todoItemContent: newTodoItem,
 			isFinished: false,
+			createdTime: Math.floor(Date.now() / 1000),
 		});
 		// firestore db에 todoItem라는 콜렉션에 위 두개 json을 추가해라 라는뜻
 		syncTodoItemListStateWithFirestore();
@@ -136,7 +139,7 @@ function App() {
 			{ isFinished: !clickedTodoItem.isFinished },
 			{ merge: true }
 		);
-		syncTodoItemListStateWithFirestore();
+		syncTodoItemListStateWithFirestore(); // 직접 state update필요없이 firestore 불러오기
 	};
 
 	const onRemoveClick = async (removedTodoItem) => {
